@@ -32,9 +32,10 @@ router.get('/', function(req, res) {
 
 router.route('/redirectURL/')
     .get(function(req, res) {
-        var url = req.params.url;
+        console.log(req);
+        url = req.query.url;
 
-        request("https://"+url, function (error, response, body) {
+        request(url, function (error, response, body) {
             if(response && response.statusCode) {
                 if (error)
                     res.json({Error: error + " (code: " + response.statusCode + ")"});
@@ -50,4 +51,4 @@ app.use('/api', router);
 // START THE SERVER
 // =============================================================================
 app.listen(port);
-console.log('Magic happens on port ' + port);
+console.log('API started on : ' + port);
