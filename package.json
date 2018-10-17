@@ -1,0 +1,8 @@
+{
+  "name" : "MyAgenda-API",
+  "main" : "server.js",
+  "dependencies": {
+    "express": "^4.16.4",
+    "body-parser": "^1.18.3"
+  }
+}
