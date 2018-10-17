@@ -32,16 +32,34 @@ router.get('/', function(req, res) {
 
 router.route('/redirectURL/')
     .get(function(req, res) {
-        console.log(req);
-        url = req.query.url;
-
+        //console.log(req);
+        let url = req.query.url;
+        console.log("======== REDIRECT CALL ========\n");
+        console.log("target : " + url + "\n");
         request(url, function (error, response, body) {
             if(response && response.statusCode) {
                 if (error)
-                    res.json({Error: error + " (code: " + response.statusCode + ")"});
-                res.json({message: body});
+                    res.json([{hasError: true, error: error + " (code: " + response.statusCode + ")"}]);
+                res.json([{hasError: false, response: response, message: body}]);
             }
         });
+        console.log("======= END =======")
+    });
+
+router.route('/redirectJSON/')
+    .get(function(req, res) {
+        //console.log(req);
+        let url = req.query.url;
+        console.log("======== REDIRECT CALL ========\n");
+        console.log("target : " + url + "\n");
+        request(url, function (error, response, body) {
+            if(response && response.statusCode) {
+                if (error)
+                    res.json([{hasError: true, error: error + " (code: " + response.statusCode + ")"}]);
+                res.json([{hasError: false, response: response, message: JSON.parse(body)}]);
+            }
+        });
+        console.log("======= END =======")
     });
 
 // REGISTER OUR ROUTES -------------------------------
