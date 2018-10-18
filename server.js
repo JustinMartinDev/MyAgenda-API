@@ -30,7 +30,58 @@ router.get('/', function(req, res) {
 });
 // more routes for our API will happen here
 
-router.route('/redirectURL/')
+router.route('/login/')
+    .post(function(req, res) {
+        //console.log(req);
+        let param = req.query;
+        console.log("======== LOGIN CALL ========\n");
+        console.log("target : " + param.url + "\n");
+
+        var j = request.jar();
+        request.get(param.url, {jar : j}, function (error, response, body) {
+            if(response && response.statusCode) {
+                if (error || response.statusCode!==200)
+                    res.json([{error: "failed_load_url", message: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"}]);
+                else
+                    loginHTML(param, j, body);
+            }
+        });
+        console.log("======= END =======")
+    });
+
+function loginHTML(param, cookie, body) {
+    let ltInput = body.getElementByName("lt");
+    var lt ="";
+    if(ltInput.value != null)
+        lt = ltInput.value;
+
+    let executionInput = body.getElementByName("execution");
+    var execution = "e1s1";
+    if (executionInput.value != null)
+        execution = executionInput.value;
+
+    const params = {
+        "_eventId": "submit",
+        "lt": lt,
+        "submit": "LOGIN",
+        "username" : param.username,
+        "password" : param.password,
+        "execution": execution
+    };
+
+    request.post(param, {
+        form: params,
+        jar : j
+        }, function (error, response, body) {
+            if(response && response.statusCode) {
+                if (error || response.statusCode!==200)
+                    res.json([{error: "failed_load_url", message: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"}]);
+                else
+                    res.json([{cookie: j.getCookieString(param), isLoged: true}]);
+            }
+    });
+}
+router.route('/redirectJSON/')
     .get(function(req, res) {
         //console.log(req);
         let url = req.query.url;
@@ -38,12 +89,15 @@ router.route('/redirectURL/')
         console.log("target : " + url + "\n");
         request(url, function (error, response, body) {
             if(response && response.statusCode) {
-                if (error)
-                    res.json([{hasError: true, error: error + " (code: " + response.statusCode + ")"}]);
-                res.json([{hasError: false, response: response, message: body}]);
+                console.log(error);
+                console.log(response.statusCode);
+                if (error || response.statusCode!==200)
+                    res.json([{error: "failed_load_url", message: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"}]);
+                else
+                    res.json([{message: JSON.parse(body)}]);
             }
         });
-        console.log("======= END =======")
+        console.log("======= END =======");
     });
 
 router.route('/redirectJSON/')
@@ -54,12 +108,15 @@ router.route('/redirectJSON/')
         console.log("target : " + url + "\n");
         request(url, function (error, response, body) {
             if(response && response.statusCode) {
-                if (error)
-                    res.json([{hasError: true, error: error + " (code: " + response.statusCode + ")"}]);
-                res.json([{hasError: false, response: response, message: JSON.parse(body)}]);
+                console.log(error);
+                console.log(response.statusCode);
+                if (error || response.statusCode!==200)
+                    res.json([{error: "failed_load_url", message: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"}]);
+                else
+                    res.json([{message: JSON.parse(body)}]);
             }
         });
-        console.log("======= END =======")
+        console.log("======= END =======");
     });
 
 // REGISTER OUR ROUTES -------------------------------
