@@ -30,95 +30,158 @@ router.get('/', function(req, res) {
 });
 // more routes for our API will happen here
 
-router.route('/login/')
-    .post(function(req, res) {
+router.route('/redirectJSON/')
+    .get(function(req, res) {
         //console.log(req);
-        let param = req.query;
-        console.log("======== LOGIN CALL ========\n");
-        console.log("target : " + param.url + "\n");
-
-        var j = request.jar();
-        request.get(param.url, {jar : j}, function (error, response, body) {
+        let url = req.query.url;
+        console.log("======== REDIRECT CALL ========\n");
+        console.log("target : " + url + "\n");
+        request(url, function (error, response, body) {
             if(response && response.statusCode) {
+                console.log(error);
+                console.log(response.statusCode);
                 if (error || response.statusCode!==200)
                     res.json([{error: "failed_load_url", message: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"}]);
                 else
-                    loginHTML(param, j, body);
+                    res.json([{message: JSON.parse(body)}]);
             }
         });
-        console.log("======= END =======")
+        console.log("======= END =======");
     });
 
-function loginHTML(param, cookie, body) {
-    let ltInput = body.getElementByName("lt");
-    var lt ="";
-    if(ltInput.value != null)
-        lt = ltInput.value;
+router.route('/redirectJSON/')
+    .get(function(req, res) {
+        //console.log(req);
+        let url = req.query.url;
+        console.log("======== REDIRECT CALL ========\n");
+        console.log("target : " + url + "\n");
+        request(url, function (error, response, body) {
+            if(response && response.statusCode) {
+                console.log(error);
+                console.log(response.statusCode);
+                if (error || response.statusCode!==200)
+                    res.json([{error: "failed_load_url", message: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"}]);
+                else
+                    res.json([{message: JSON.parse(body)}]);
+            }
+        });
+        console.log("======= END =======");
+    });
 
-    let executionInput = body.getElementByName("execution");
+function loginHTML(param, j, body, responseAPI) {
+    var lt = "";
     var execution = "e1s1";
-    if (executionInput.value != null)
-        execution = executionInput.value;
 
-    const params = {
+    var jsdom = require('jsdom').jsdom;
+    var document = jsdom(body, {});
+    var window = document.defaultView;
+    var $ = require('jquery')(window);
+
+    let ltInput = $('input[name="lt"]');
+
+    if(ltInput.val() != null)
+        lt = ltInput.val();
+
+    let executionInput = $("input[name='execution']");
+    if (executionInput.val() != null)
+        execution = executionInput.val();
+
+    /*const newParams = {
         "_eventId": "submit",
         "lt": lt,
         "submit": "LOGIN",
         "username" : param.username,
         "password" : param.password,
         "execution": execution
+    };*/
+
+    const newParams = [
+        {
+            name: '_eventId',
+            value: 'submit'
+        },
+        {
+            name: 'submit',
+            value: 'LOGING'
+        },
+        {
+            name: "username",
+            value: "param.username"
+        },
+        {
+            name: "password",
+            value: param.password
+        },
+        {
+            name: "execution",
+            value: execution
+        },
+        {
+            name: "lt",
+            value: lt
+        }
+    ];
+
+    var cookie = j.getCookieString(param.url);
+    console.log(cookie);
+
+    var option = {
+        method : "POST",
+        uri: param.url,
+        headers : {
+            'Set-Cookie' : cookie
+        },
+        postData: {
+            mimeType: 'application/x-www-form-urlencoded',
+            params: newParams
+        },
+        followAllRedirects : true
     };
+    console.log(option);
 
-    request.post(param, {
-        form: params,
-        jar : j
-        }, function (error, response, body) {
-            if(response && response.statusCode) {
+   request(option, function (error, response, body) {
+       if (response && response.statusCode) {
+           var document = jsdom(body, {});
+           var window = document.defaultView;
+           var $ = require('jquery')(window);
+
+           var error = $('.error');
+           var success = $('.success');
+
+           console.log(body);
+       }
+   });
+                /*
                 if (error || response.statusCode!==200)
-                    res.json([{error: "failed_load_url", message: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"}]);
+                    responseAPI.json([{error: "failed_load_url", message: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"}]);
                 else
-                    res.json([{cookie: j.getCookieString(param), isLoged: true}]);
+                    responseAPI.json([{cookie: j.getCookieString(param), isLoged: true}]);*/
+/*
+                console.log("======= RESPONSE =======");
+                console.log(response);
+                console.log("\n ======= BODY =======");
+                console.log(body);
             }
-    });
+    });*/
 }
-router.route('/redirectJSON/')
-    .get(function(req, res) {
+router.route('/loginCAS/')
+    .post(function(req, res) {
         //console.log(req);
-        let url = req.query.url;
-        console.log("======== REDIRECT CALL ========\n");
-        console.log("target : " + url + "\n");
-        request(url, function (error, response, body) {
+        let param = req.query;
+        console.log("======== LOGIN CALL ========\n");
+        console.log("target : " + param.url + "\n");
+        var j = request.jar();
+
+        request.get(param.url, {jar : j}, function (error, response, body) {
             if(response && response.statusCode) {
-                console.log(error);
-                console.log(response.statusCode);
                 if (error || response.statusCode!==200)
                     res.json([{error: "failed_load_url", message: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"}]);
                 else
-                    res.json([{message: JSON.parse(body)}]);
+                    loginHTML(param, j, body, res);
             }
         });
-        console.log("======= END =======");
+        console.log("======= END =======")
     });
-
-router.route('/redirectJSON/')
-    .get(function(req, res) {
-        //console.log(req);
-        let url = req.query.url;
-        console.log("======== REDIRECT CALL ========\n");
-        console.log("target : " + url + "\n");
-        request(url, function (error, response, body) {
-            if(response && response.statusCode) {
-                console.log(error);
-                console.log(response.statusCode);
-                if (error || response.statusCode!==200)
-                    res.json([{error: "failed_load_url", message: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"}]);
-                else
-                    res.json([{message: JSON.parse(body)}]);
-            }
-        });
-        console.log("======= END =======");
-    });
-
 // REGISTER OUR ROUTES -------------------------------
 // all of our routes will be prefixed with /api
 app.use('/api', router);
