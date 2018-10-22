@@ -18,7 +18,7 @@ var port = 3001;
 // =============================================================================
 var router = express.Router();              // get an instance of the express Router
 
-// middleware to use for all requests
+// middlewares to use for all requests
 router.use(function (req, res, next) {
     //todo logging
     console.log('Something is happening.');
