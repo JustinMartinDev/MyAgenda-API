@@ -2,13 +2,14 @@ var request = require("request");
 const CAS = require("../models/cas.models");
 
 exports.loginCAS = (req, res) => {
+    console.log(req.body);
     request.get(req.body.url, function (error, response, body) {
         if (response && response.statusCode) {
             if (error || response.statusCode !== 200) {
-                res.status(404).send({error: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"});
+                res.status(response.statusCode).json({error: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"});
             }
             else {
-                var casProcess = new CAS(body, response, req.body);
+                var casProcess = new CAS(body, res, req.body);
                 casProcess.prepareRequest();
                 casProcess.sendRequest();
             }
@@ -17,12 +18,23 @@ exports.loginCAS = (req, res) => {
 };
 
 exports.getJSON = (req, res) => {
-    request(req.query.url, function (error, response, body) {
+    const option = {
+        url : req.query.url,
+        method : 'GET'
+    };
+    request(option, function (error, response, body) {
         if (response && response.statusCode) {
-            if (error || response.statusCode !== 200)
-                res.status(404).send({ error: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")" });
-            else
-                res.status(200).send({message: JSON.parse(body)});
+            console.log(response.statusCode);
+            if (error || response.statusCode !== 200) {
+                res.status(response.statusCode).send({error: "Nous n'avons pas pu accéder à cet URL (code : " + response.statusCode + ")"});
+            }
+            else {
+                try {
+                    res.status(200).send({message: JSON.parse(body)});
+                } catch (e) {
+                    res.status(406).send({error: "Le fichier n'est pas convertible en JSON"})
+                }
+            }
         }
     });
 };

@@ -8,20 +8,14 @@ const FREE = config.permissionLevels.NORMAL_USER;
 
 exports.routesConfig = function (app) {
     app.post('/api/loginCAS', [
-        ValidationMiddleware.validJWTNeeded,
-        PermissionMiddleware.minimumPermissionLevelRequired(FREE),
         UtilsController.loginCAS
     ]);
 
     app.get('/api/redirectJSON', [
-        ValidationMiddleware.validJWTNeeded,
-        PermissionMiddleware.minimumPermissionLevelRequired(FREE),
         UtilsController.getJSON
     ]);
 
     app.get('/api/redirectHTML', [
-        ValidationMiddleware.validJWTNeeded,
-        PermissionMiddleware.minimumPermissionLevelRequired(FREE),
         UtilsController.getHTML
     ]);
 

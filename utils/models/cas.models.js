@@ -1,3 +1,4 @@
+var request = require("request");
 class CAS {
     constructor(body, res, param){
         this.body = body;
@@ -15,30 +16,26 @@ class CAS {
 
     prepareRequest(){
         // Create virtual windows to use Jquery
-        var jsdom = require('jsdom').jsdom;
-        var document = jsdom(this.body, {});
-        var window = document.defaultView;
-        var $ = require('jquery')(window);
+            var jsdom = require('jsdom').jsdom;
+            var document = jsdom(this.body, {});
+            var window = document.defaultView;
+            var $ = require('jquery')(window);
 
-        let ltInput = $('input[name="lt"]');
+            let ltInput = $('input[name="lt"]');
 
-        if (ltInput.val() != null)
-            this.loginPOSTParam.lt = ltInput.val();
+            if (ltInput.val() != null)
+                this.loginPOSTParam.lt = ltInput.val();
 
-        let executionInput = $("input[name='execution']");
-        if (executionInput.val() != null)
-            this.loginPOSTParam.execution = executionInput.val();
+            let executionInput = $("input[name='execution']");
+            if (executionInput.val() != null)
+                this.loginPOSTParam.execution = executionInput.val();
     }
     sendRequest(){
-        request.post({ url: this.url, form: this.loginPOSTParam }, function (err, response, loginBody) {
+        request.post({ url: this.url, form: this.loginPOSTParam }, (err, response, loginBody) => {
             if (response && response.statusCode && !err) {
                 this.analyseResponse(loginBody, response);
             } else {
-                res.status = 500;
-                res.json({
-                    error: "login_request_fail",
-                    message: "Error during check your login with University server."
-                });
+                this.res.status(500).send({error: "Error during check your login with University server."});
             }
         });
     }
