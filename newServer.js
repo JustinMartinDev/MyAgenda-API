@@ -4,7 +4,7 @@ const express = require('express');
 const app = express();
 const bodyParser = require('body-parser');
 
-const AccountRouter = require('./oauth2/routes.config');
+const Oauth2Router = require('./oauth2/routes.config');
 const UtilsRouter = require('./utils/routes.config');
 
 app.use(function (req, res, next) {
@@ -25,8 +25,7 @@ app.use(bodyParser.text());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
-AuthorizationRouter.routesConfig(app);
-AccountRouter.routesConfig(app);
+Oauth2Router.routesConfig(app);
 UtilsRouter.routesConfig(app);
 
 
